@@ -9,10 +9,17 @@ use App\Models\Product;
 class ProductController extends Controller
 {
     public function index()
-    {
-        $products = Product::all();
-        return response()->json($products);
-    }
+{
+    $products = Product::with('user')->get();
+
+    return response()->json([
+        'code' => 200,
+        'status' => 'success',
+        'message' => 'List produk dengan data user',
+        'data' => $products,
+    ]);
+}
+
 
     public function store(Request $request)
     {
@@ -46,10 +53,24 @@ class ProductController extends Controller
     }
 
     public function show($id)
-    {
-        $product = Product::find($id);
-        return response()->json($product);
+{
+    $product = Product::with('user')->find($id);
+
+    if (!$product) {
+        return response()->json([
+            'code' => 404,
+            'status' => 'error',
+            'message' => 'Produk tidak ditemukan',
+        ], 404);
     }
+
+    return response()->json([
+        'code' => 200,
+        'status' => 'success',
+        'data' => $product,
+    ], 200);
+}
+
 
     public function update(Request $request, $id)
     {

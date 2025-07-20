@@ -14,7 +14,20 @@ class TransactionController extends Controller
 {
     public function index()
     {
-        $transactions = Transaction::where('user_id', Auth::user()->id)->with(['transactionDetails.product', 'payment'])->get();
+        $user = Auth::user();
+
+        if ($user->role === 'merchant') {
+            $transactions = Transaction::whereHas('transactionDetails.product', function ($query) use ($user) {
+                $query->where('user_id', $user->id);
+            })
+            ->with(['transactionDetails.product', 'user', 'payment']) // Tambahkan user
+            ->get();
+        } else {
+            $transactions = Transaction::where('user_id', $user->id)
+                ->with(['transactionDetails.product', 'payment', 'user']) // Tambahkan user
+                ->get();
+        }
+
         return response()->json([
             'code' => 200,
             'status' => 'success',
@@ -22,6 +35,7 @@ class TransactionController extends Controller
             'data' => $transactions
         ]);
     }
+
 
     public function store()
     {

@@ -70,45 +70,46 @@ class UserController extends Controller
     }
 
     public function register(Request $request)
-    {
-        try {
-            $validatedData = $request->validate([
-                'name' => 'required|string|max:255',
-                'email' => 'required|string|email|max:255|unique:users',
-                'password' => 'required|string|min:8|confirmed',
-                'phone' => 'required|string|max:255',
-                'address' => 'required|string|max:255',
-            ]);
+{
+    try {
+        $validatedData = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8|confirmed',
+            'phone' => 'required|string|max:255',
+            'address' => 'required|string|max:255',
+            'role' => 'required|string|in:user,admin,merchant',
+        ]);
 
-            $user = User::create([
-                'name' => $validatedData['name'],
-                'email' => $validatedData['email'],
-                'password' => Hash::make($validatedData['password']),
-                'role' => 'user',
-                'phone' => $validatedData['phone'],
-                'address' => $validatedData['address'],
-            ]);
+        $user = User::create([
+            'name' => $validatedData['name'],
+            'email' => $validatedData['email'],
+            'password' => Hash::make($validatedData['password']),
+            'role' => $validatedData['role'],
+            'phone' => $validatedData['phone'],
+            'address' => $validatedData['address'],
+        ]);
 
-            $token = $user->createToken('authToken')->plainTextToken;
+        $token = $user->createToken('authToken')->plainTextToken;
 
-            return response()->json([
-                'code' => 201,
-                'status' => 'success',
-                'message' => 'User registered successfully',
-                'data' => [
-                    'user' => $user,
-                    'token' => 'Bearer ' . $token
-                ]
-            ], 201);
-        } catch (\Exception $e) {
-            return response()->json([
-                'code' => 400,
-                'status' => 'error',
-                'message' => 'Failed to register user',
-                'error' => $e->getMessage()
-            ], 400);
-        }
+        return response()->json([
+            'code' => 201,
+            'status' => 'success',
+            'message' => 'User registered successfully',
+            'data' => [
+                'user' => $user,
+                'token' => 'Bearer ' . $token
+            ]
+        ], 201);
+    } catch (\Exception $e) {
+        return response()->json([
+            'code' => 400,
+            'status' => 'error',
+            'message' => 'Failed to register user',
+            'error' => $e->getMessage()
+        ], 400);
     }
+}
 
     public function update(Request $request)
     {

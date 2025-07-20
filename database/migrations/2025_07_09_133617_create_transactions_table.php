@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->integer('total_price');
-            $table->enum('status', ['processing', 'completed', 'cancelled'])->default('processing');
+            $table->enum('status', ['processing', 'delivery', 'completed', 'cancelled'])->default('processing');
             $table->timestamps();
         });
     }
