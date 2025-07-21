@@ -76,6 +76,9 @@ class UserController extends Controller
                 'name' => 'required|string|max:255',
                 'email' => 'required|string|email|max:255|unique:users',
                 'password' => 'required|string|min:8|confirmed',
+                'long' => 'required|string|max:255',
+                'lat' => 'required|string|max:255',
+                'role' => 'nullable|string|max:255',
                 'phone' => 'required|string|max:255',
                 'address' => 'required|string|max:255',
             ]);
@@ -84,9 +87,11 @@ class UserController extends Controller
                 'name' => $validatedData['name'],
                 'email' => $validatedData['email'],
                 'password' => Hash::make($validatedData['password']),
-                'role' => 'user',
+                'role' => $validatedData['role'] ?? 'user',
                 'phone' => $validatedData['phone'],
                 'address' => $validatedData['address'],
+                'long' => $validatedData['long'],
+                'lat' => $validatedData['lat'],
             ]);
 
             $token = $user->createToken('authToken')->plainTextToken;
@@ -118,6 +123,9 @@ class UserController extends Controller
                 'name' => 'required|string|max:255',
                 'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
                 'phone' => 'required|string|max:255',
+                'long' => 'required|string|max:255',
+                'lat' => 'required|string|max:255',
+                'role' => 'nullable|string|max:255',
                 'address' => 'required|string|max:255',
             ]);
 
@@ -126,6 +134,9 @@ class UserController extends Controller
                 'email' => $validatedData['email'],
                 'phone' => $validatedData['phone'],
                 'address' => $validatedData['address'],
+                'long' => $validatedData['long'],
+                'lat' => $validatedData['lat'],
+                'role' => $validatedData['role'] ?? 'user',
             ]);
 
             return response()->json([
