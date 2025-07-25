@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('password');
             $table->string('long')->nullable();
             $table->string('lat')->nullable();
+            $table->enum('status', ['active', 'inactive'])->default('active');
             $table->rememberToken();
             $table->timestamps();
         });
