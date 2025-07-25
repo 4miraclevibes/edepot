@@ -40,7 +40,10 @@ class TransactionController extends Controller
 
         Payment::create([
             'transaction_id' => $transaction->id,
-            'payment_status' => 'pending',
+            'status' => 'pending',
+            'amount' => $carts->sum('price'),
+            'code' => 'TRX' . rand(100000, 999999),
+            'user_id' => Auth::user()->id
         ]);
 
         foreach ($carts as $cart) {

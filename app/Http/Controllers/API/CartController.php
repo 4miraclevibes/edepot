@@ -34,7 +34,7 @@ class CartController extends Controller
                 'user_id' => Auth::user()->id,
                 'product_id' => $product->id,
                 'quantity' => $request->quantity,
-                'price' => $product->price,
+                'price' => $product->price * $request->quantity,
             ]);
             return response()->json([
                 'code' => 200,
