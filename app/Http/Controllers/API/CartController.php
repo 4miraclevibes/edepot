@@ -12,7 +12,7 @@ class CartController extends Controller
 {
     public function index()
     {
-        $carts = Cart::with(['product:id,name']) // hanya ambil id & name produk
+        $carts = Cart::with(['product.user']) // ✅ ambil user (depot) juga
                     ->where('user_id', Auth::user()->id)
                     ->get();
 
@@ -23,6 +23,7 @@ class CartController extends Controller
             'data' => $carts
         ]);
     }
+
 
     public function store(Request $request)
     {
@@ -37,7 +38,7 @@ class CartController extends Controller
                 'user_id' => Auth::user()->id,
                 'product_id' => $product->id,
                 'quantity' => $request->quantity,
-                'price' => $product->price,
+                'price' => $product->price * $request->quantity,
             ]);
             return response()->json([
                 'code' => 200,

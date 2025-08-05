@@ -15,19 +15,49 @@ class ProductSeeder extends Seeder
     {
         $products = [
             [
-                'name' => 'galon air 20 liter',
-                'price' => 10000,
+                'name' => 'Refil Galon',
+                'price' => 6000,
                 'user_id' => 2,
             ],
             [
-                'name' => 'galon air 10 liter',
+                'name' => 'Galon Baru',
                 'price' => 5000,
                 'user_id' => 2,
             ],
             [
-                'name' => 'galon air 5 liter',
-                'price' => 2500,
+                'name' => 'Galon Baru + Air',
+                'price' => 50000,
                 'user_id' => 2,
+            ],
+            [
+                'name' => 'Refil Galon',
+                'price' => 6000,
+                'user_id' => 3,
+            ],
+            [
+                'name' => 'Galon Baru',
+                'price' => 5000,
+                'user_id' => 3,
+            ],
+            [
+                'name' => 'Galon Baru + Air',
+                'price' => 50000,
+                'user_id' => 3,
+            ],
+            [
+                'name' => 'Refil Galon',
+                'price' => 6000,
+                'user_id' => 4,
+            ],
+            [
+                'name' => 'Galon Baru',
+                'price' => 5000,
+                'user_id' => 4,
+            ],
+            [
+                'name' => 'Galon Baru + Air',
+                'price' => 50000,
+                'user_id' => 4,
             ],
         ];
 

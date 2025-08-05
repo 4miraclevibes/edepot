@@ -5,11 +5,16 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\UserController;
 use App\Http\Controllers\API\ProductController;
 use App\Http\Controllers\API\CartController;
+use App\Http\Controllers\API\PaymentController;
 use App\Http\Controllers\API\TransactionController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
+
+
+Route::post('/payment/{code}', [PaymentController::class, 'updatePayment']);
+Route::put('/merchant/toggle-open', [UserController::class, 'toggleOpen'])->middleware('auth:sanctum');
 
 Route::get('/user', [UserController::class, 'userDetail'])->middleware('auth:sanctum');
 Route::post('/login', [UserController::class, 'login']);

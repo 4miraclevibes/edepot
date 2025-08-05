@@ -20,11 +20,19 @@ class TransactionController extends Controller
             $transactions = Transaction::whereHas('transactionDetails.product', function ($query) use ($user) {
                 $query->where('user_id', $user->id);
             })
-            ->with(['transactionDetails.product', 'user', 'payment']) // Tambahkan user
+            ->with([
+                'transactionDetails.product.user', // << tambahkan ini
+                'user',
+                'payment'
+            ])
             ->get();
         } else {
             $transactions = Transaction::where('user_id', $user->id)
-                ->with(['transactionDetails.product', 'payment', 'user']) // Tambahkan user
+                ->with([
+                    'transactionDetails.product.user', // << tambahkan ini
+                    'payment',
+                    'user'
+                ])
                 ->get();
         }
 
@@ -37,8 +45,12 @@ class TransactionController extends Controller
     }
 
 
-    public function store()
+
+    public function store(Request $request)
     {
+        $request->validate([
+            'shipping_fee' => 'nullable|integer|min:0',
+        ]);
         $carts = Cart::where('user_id', Auth::user()->id)->get();
         if ($carts->isEmpty()) {
             return response()->json([
@@ -47,14 +59,21 @@ class TransactionController extends Controller
                 'message' => 'Cart is empty',
             ], 404);
         }
+
+        $subtotal = $carts->sum('price');
+        $shippingFee = $request->shipping_fee ?? 0;
+
         $transaction = Transaction::create([
             'user_id' => Auth::user()->id,
-            'total_price' => $carts->sum('price'),
+            'total_price' => $subtotal + $shippingFee,
+            'shipping_fee' => $shippingFee,
         ]);
-
         Payment::create([
             'transaction_id' => $transaction->id,
-            'payment_status' => 'pending',
+            'status' => 'pending',
+            'amount' => $subtotal + $shippingFee,
+            'code' => 'TRX' . rand(100000, 999999),
+            'user_id' => Auth::user()->id
         ]);
 
         foreach ($carts as $cart) {
@@ -72,26 +91,35 @@ class TransactionController extends Controller
             'code' => 200,
             'status' => 'success',
             'message' => 'Transaction created successfully',
-            'data' => $transaction->load('transactionDetails.product', 'payment')
+            'data' => $transaction->load('transactionDetails.product.user', 'payment')
         ]);
     }
 
     public function update(Request $request, $id)
     {
         $request->validate([
-            'payment_status' => 'required|in:processing,completed,cancelled',
+            'status' => 'required|in:processing,delivery,completed,cancelled',
         ]);
 
         try {
-        $transaction = Transaction::find($id);
-        $transaction->update([
-            'status' => $request->status,
-        ]);
+            $transaction = Transaction::find($id);
 
-        return response()->json([
-            'code' => 200,
-            'status' => 'success',
-                'message' => 'Transaction updated successfully',
+            if (!$transaction) {
+                return response()->json([
+                    'code' => 404,
+                    'status' => 'error',
+                    'message' => 'Transaction not found',
+                ], 404);
+            }
+
+            $transaction->update([
+                'status' => $request->status,
+            ]);
+
+            return response()->json([
+                'code' => 200,
+                'status' => 'success',
+                'message' => 'Transaction status updated successfully',
                 'data' => $transaction
             ]);
         } catch (\Exception $e) {
@@ -103,4 +131,5 @@ class TransactionController extends Controller
             ], 500);
         }
     }
+
 }

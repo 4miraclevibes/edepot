@@ -79,15 +79,19 @@ class UserController extends Controller
             'phone' => 'required|string|max:255',
             'address' => 'required|string|max:255',
             'role' => 'required|string|in:user,admin,merchant',
+            'long' => 'required|string|max:255',
+            'lat' => 'required|string|max:255',
         ]);
 
         $user = User::create([
             'name' => $validatedData['name'],
             'email' => $validatedData['email'],
             'password' => Hash::make($validatedData['password']),
-            'role' => $validatedData['role'],
+            'role' => $validatedData['role'] ?? 'user',
             'phone' => $validatedData['phone'],
             'address' => $validatedData['address'],
+            'long' => $validatedData['long'],
+            'lat' => $validatedData['lat'],
         ]);
 
         $token = $user->createToken('authToken')->plainTextToken;
@@ -120,6 +124,9 @@ class UserController extends Controller
                 'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
                 'phone' => 'required|string|max:255',
                 'address' => 'required|string|max:255',
+                'long' => 'required|string|max:255',
+                'lat' => 'required|string|max:255',
+                'role' => 'nullable|string|max:255',
             ]);
 
             $user->update([
@@ -127,6 +134,9 @@ class UserController extends Controller
                 'email' => $validatedData['email'],
                 'phone' => $validatedData['phone'],
                 'address' => $validatedData['address'],
+                'long' => $validatedData['long'],
+                'lat' => $validatedData['lat'],
+                'role' => $validatedData['role'] ?? 'user',
             ]);
 
             return response()->json([
@@ -164,5 +174,26 @@ class UserController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    public function toggleOpen(Request $request)
+    {
+        $user = $request->user();
+
+        if ($user->role !== 'merchant') {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Unauthorized',
+            ], 403);
+        }
+
+        $user->is_open = !$user->is_open;
+        $user->save();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Store status updated',
+            'is_open' => $user->is_open
+        ]);
     }
 }

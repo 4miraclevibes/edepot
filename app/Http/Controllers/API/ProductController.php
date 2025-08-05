@@ -9,16 +9,21 @@ use App\Models\Product;
 class ProductController extends Controller
 {
     public function index()
-{
-    $products = Product::with('user')->get();
+    {
+        $products = Product::with('user')
+            ->whereHas('user', function ($query) {
+                $query->where('role', 'merchant')
+                    ->where('is_open', true);
+            })
+            ->get();
 
-    return response()->json([
-        'code' => 200,
-        'status' => 'success',
-        'message' => 'List produk dengan data user',
-        'data' => $products,
-    ]);
-}
+        return response()->json([
+            'code' => 200,
+            'status' => 'success',
+            'message' => 'List produk dari depot yang sedang buka',
+            'data' => $products,
+        ]);
+    }
 
 
     public function store(Request $request)
