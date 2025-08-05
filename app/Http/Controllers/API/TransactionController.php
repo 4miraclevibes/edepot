@@ -138,7 +138,7 @@ class TransactionController extends Controller
     {
         try {
             $response = Http::post('https://edupay.justputoff.com/api/service/storePayment', [
-                'service_id' => 10, // Service ID untuk Sportlodek
+                'service_id' => 9, // Service ID untuk Sportlodek
                 'total' => $total,
                 'code' => $code,
                 'email' => $email,
@@ -151,7 +151,7 @@ class TransactionController extends Controller
                     'status' => $response->status(),
                     'response' => $response->json(),
                     'request' => [
-                        'service_id' => 10,
+                        'service_id' => 9,
                         'total' => $total,
                         'code' => $code,
                         'email' => $email,
@@ -164,7 +164,7 @@ class TransactionController extends Controller
             Log::error('EduPay API Exception', [
                 'message' => $e->getMessage(),
                 'request' => [
-                    'service_id' => 10,
+                    'service_id' => 9,
                     'total' => $total,
                     'code' => $code,
                     'email' => $email,
