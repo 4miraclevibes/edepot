@@ -7,6 +7,7 @@ use App\Http\Controllers\API\ProductController;
 use App\Http\Controllers\API\CartController;
 use App\Http\Controllers\API\PaymentController;
 use App\Http\Controllers\API\TransactionController;
+use App\Http\Controllers\API\EdupayController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -42,3 +43,6 @@ Route::put('/transactions/{id}', [TransactionController::class, 'update'])->midd
 
 Route::get('/payments', [PaymentController::class, 'index'])->middleware('auth:sanctum');
 Route::post('/payments', [PaymentController::class, 'store'])->middleware('auth:sanctum');
+
+// EDUPAY API - Public routes (tidak perlu authentication)
+Route::post('payment-notification/{code}', [EdupayController::class, 'paymentNotification']);
