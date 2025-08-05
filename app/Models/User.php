@@ -27,7 +27,7 @@ class User extends Authenticatable
         'address',
         'long',
         'lat',
-        'status'
+        'is_open'
     ];
 
     /**
