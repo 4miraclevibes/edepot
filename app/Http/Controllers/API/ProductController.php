@@ -10,7 +10,7 @@ class ProductController extends Controller
 {
     public function index()
     {
-        $products = Product::where('is_open', true)->get();
+        $products = Product::all();
         return response()->json($products);
     }
 
