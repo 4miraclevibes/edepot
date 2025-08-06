@@ -72,14 +72,18 @@ class TransactionController extends Controller
 
             $transaction = Transaction::create([
                 'user_id' => Auth::user()->id,
+
                 'total_price' => $subtotal + $shippingFee,
                 'shipping_fee' => $shippingFee,
+
             ]);
 
             $payment = Payment::create([
                 'transaction_id' => $transaction->id,
                 'status' => 'pending',
+
                 'amount' => $subtotal + $shippingFee,
+
                 'code' => 'TRX' . rand(100000, 999999),
                 'user_id' => Auth::user()->id
             ]);
@@ -93,7 +97,6 @@ class TransactionController extends Controller
                 ]);
             }
 
-            // Hit EduPay API
             $transactionWithRelations = $transaction->load(['transactionDetails.product', 'user']);
             $totalPrice = $transaction->total_price;
 
@@ -104,7 +107,9 @@ class TransactionController extends Controller
             );
 
             if (!$edupayResponse) {
+
                 DB::rollBack();
+
                 return response()->json([
                     'message' => 'Gagal membuat payment di EduPay. Silakan coba lagi.',
                     'error' => 'EDUPAY_API_ERROR',
@@ -122,6 +127,7 @@ class TransactionController extends Controller
                 'message' => 'Transaction created successfully',
                 'data' => $transaction->load('transactionDetails.product', 'payment')
             ]);
+
         } catch (\Exception $e) {
             DB::rollBack();
 
