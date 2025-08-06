@@ -7,14 +7,20 @@ use App\Http\Controllers\API\ProductController;
 use App\Http\Controllers\API\CartController;
 use App\Http\Controllers\API\PaymentController;
 use App\Http\Controllers\API\TransactionController;
+use App\Http\Controllers\API\EdupayController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
 
-Route::post('/payment/{code}', [PaymentController::class, 'updatePayment']);
 Route::put('/merchant/toggle-open', [UserController::class, 'toggleOpen'])->middleware('auth:sanctum');
+//API UPDATE PAYMENT FROM EDUPAY
+
+Route::post('/payment/{code}', [PaymentController::class, 'updatePayment']);
+
+//END PAYMENT UPDATE
+
 
 Route::get('/user', [UserController::class, 'userDetail'])->middleware('auth:sanctum');
 Route::post('/login', [UserController::class, 'login']);
@@ -36,3 +42,9 @@ Route::delete('/carts/{id}', [CartController::class, 'destroy'])->middleware('au
 Route::get('/transactions', [TransactionController::class, 'index'])->middleware('auth:sanctum');
 Route::post('/transactions', [TransactionController::class, 'store'])->middleware('auth:sanctum');
 Route::put('/transactions/{id}', [TransactionController::class, 'update'])->middleware('auth:sanctum');
+
+Route::get('/payments', [PaymentController::class, 'index'])->middleware('auth:sanctum');
+Route::post('/payments', [PaymentController::class, 'store'])->middleware('auth:sanctum');
+
+// EDUPAY API - Public routes (tidak perlu authentication)
+Route::post('payment-notification/{code}', [EdupayController::class, 'paymentNotification']);
