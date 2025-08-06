@@ -12,7 +12,10 @@ class CartController extends Controller
 {
     public function index()
     {
-        $carts = Cart::where('user_id', Auth::user()->id)->get();
+        $carts = Cart::with(['product.user']) // ✅ ambil user (depot) juga
+                    ->where('user_id', Auth::user()->id)
+                    ->get();
+
         return response()->json([
             'code' => 200,
             'status' => 'success',
@@ -20,6 +23,7 @@ class CartController extends Controller
             'data' => $carts
         ]);
     }
+
 
     public function store(Request $request)
     {

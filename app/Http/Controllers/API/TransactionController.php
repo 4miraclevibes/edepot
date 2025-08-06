@@ -17,7 +17,28 @@ class TransactionController extends Controller
 {
     public function index()
     {
-        $transactions = Transaction::where('user_id', Auth::user()->id)->with(['transactionDetails.product', 'payment'])->get();
+        $user = Auth::user();
+
+        if ($user->role === 'merchant') {
+            $transactions = Transaction::whereHas('transactionDetails.product', function ($query) use ($user) {
+                $query->where('user_id', $user->id);
+            })
+            ->with([
+                'transactionDetails.product.user',
+                'user',
+                'payment'
+            ])
+            ->get();
+        } else {
+            $transactions = Transaction::where('user_id', $user->id)
+                ->with([
+                    'transactionDetails.product.user',
+                    'payment',
+                    'user'
+                ])
+                ->get();
+        }
+
         return response()->json([
             'code' => 200,
             'status' => 'success',
@@ -26,8 +47,14 @@ class TransactionController extends Controller
         ]);
     }
 
-    public function store()
+
+
+    public function store(Request $request)
     {
+        $request->validate([
+            'shipping_fee' => 'nullable|integer|min:0',
+        ]);
+
         $carts = Cart::where('user_id', Auth::user()->id)->get();
         if ($carts->isEmpty()) {
             return response()->json([
@@ -37,18 +64,26 @@ class TransactionController extends Controller
             ], 404);
         }
 
+        $subtotal = $carts->sum('price');
+        $shippingFee = $request->shipping_fee ?? 0;
+
         try {
             DB::beginTransaction();
 
             $transaction = Transaction::create([
                 'user_id' => Auth::user()->id,
-                'total_price' => $carts->sum('price'),
+
+                'total_price' => $subtotal + $shippingFee,
+                'shipping_fee' => $shippingFee,
+
             ]);
 
             $payment = Payment::create([
                 'transaction_id' => $transaction->id,
                 'status' => 'pending',
-                'amount' => $carts->sum('price'),
+
+                'amount' => $subtotal + $shippingFee,
+
                 'code' => 'TRX' . rand(100000, 999999),
                 'user_id' => Auth::user()->id
             ]);
@@ -62,10 +97,9 @@ class TransactionController extends Controller
                 ]);
             }
 
-            // Hit EduPay API untuk semua payment method
-            // Load transaction dengan merchant dan user relationship
             $transactionWithRelations = $transaction->load(['transactionDetails.product', 'user']);
             $totalPrice = $transaction->total_price;
+
             $edupayResponse = $this->edupayCreatePayment(
                 $payment->code,
                 $totalPrice,
@@ -73,7 +107,7 @@ class TransactionController extends Controller
             );
 
             if (!$edupayResponse) {
-                // Jika EduPay API gagal, rollback database transaction
+
                 DB::rollBack();
 
                 return response()->json([
@@ -106,22 +140,32 @@ class TransactionController extends Controller
         }
     }
 
+
     public function update(Request $request, $id)
     {
         $request->validate([
-            'payment_status' => 'required|in:processing,completed,cancelled',
+            'status' => 'required|in:processing,delivery,completed,cancelled',
         ]);
 
         try {
-        $transaction = Transaction::find($id);
-        $transaction->update([
-            'status' => $request->status,
-        ]);
+            $transaction = Transaction::find($id);
 
-        return response()->json([
-            'code' => 200,
-            'status' => 'success',
-                'message' => 'Transaction updated successfully',
+            if (!$transaction) {
+                return response()->json([
+                    'code' => 404,
+                    'status' => 'error',
+                    'message' => 'Transaction not found',
+                ], 404);
+            }
+
+            $transaction->update([
+                'status' => $request->status,
+            ]);
+
+            return response()->json([
+                'code' => 200,
+                'status' => 'success',
+                'message' => 'Transaction status updated successfully',
                 'data' => $transaction
             ]);
         } catch (\Exception $e) {

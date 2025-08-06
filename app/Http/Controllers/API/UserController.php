@@ -40,7 +40,10 @@ class UserController extends Controller
             ]);
 
             if (Auth::attempt($credentials)) {
-                $user = Auth::user()->load('transactions', 'products');
+                /** @var \App\Models\User $user */
+                $user = Auth::user();
+                $user->load('transactions', 'products');
+
                 $token = $user->createToken('authToken')->plainTextToken;
 
                 return response()->json([
@@ -81,6 +84,9 @@ class UserController extends Controller
                 'role' => 'nullable|string|max:255',
                 'phone' => 'required|string|max:255',
                 'address' => 'required|string|max:255',
+                'role' => 'required|string|in:user,admin,merchant',
+                'long' => 'required|string|max:255',
+                'lat' => 'required|string|max:255',
             ]);
 
             $user = User::create([
@@ -118,6 +124,7 @@ class UserController extends Controller
     public function update(Request $request)
     {
         try {
+             /** @var \App\Models\User $user */
             $user = Auth::user();
             $validatedData = $request->validate([
                 'name' => 'required|string|max:255',
@@ -127,6 +134,9 @@ class UserController extends Controller
                 'lat' => 'required|string|max:255',
                 'role' => 'nullable|string|max:255',
                 'address' => 'required|string|max:255',
+                'long' => 'required|string|max:255',
+                'lat' => 'required|string|max:255',
+                'role' => 'nullable|string|max:255',
             ]);
 
             $user->update([
@@ -174,5 +184,26 @@ class UserController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    public function toggleOpen(Request $request)
+    {
+        $user = $request->user();
+
+        if ($user->role !== 'merchant') {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Unauthorized',
+            ], 403);
+        }
+
+        $user->is_open = !$user->is_open;
+        $user->save();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Store status updated',
+            'is_open' => $user->is_open
+        ]);
     }
 }
