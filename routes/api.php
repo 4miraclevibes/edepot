@@ -15,6 +15,7 @@ Route::get('/user', function (Request $request) {
 
 
 Route::put('/merchant/toggle-open', [UserController::class, 'toggleOpen'])->middleware('auth:sanctum');
+
 //API UPDATE PAYMENT FROM EDUPAY
 
 Route::post('/payment/{code}', [PaymentController::class, 'updatePayment']);
