@@ -12,6 +12,7 @@ use App\Models\Transaction;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use App\Models\Product;
 
 class TransactionController extends Controller
 {
@@ -96,14 +97,14 @@ class TransactionController extends Controller
                     'price' => $cart->price * $cart->quantity,
                 ]);
             }
+            $merchantEmail = Product::where('id', $carts->product_id)->first()->user->email;
 
-            $transactionWithRelations = $transaction->load(['transactionDetails.product', 'user']);
             $totalPrice = $transaction->total_price;
 
             $edupayResponse = $this->edupayCreatePayment(
                 $payment->code,
                 $totalPrice,
-                $transactionWithRelations->user->email
+                $merchantEmail
             );
 
             if (!$edupayResponse) {
