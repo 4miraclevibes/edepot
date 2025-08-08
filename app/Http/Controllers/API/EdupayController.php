@@ -16,9 +16,11 @@ class EdupayController extends Controller
             return response()->json(['message' => 'Payment not found'], 404);
         }
 
+
+
         // Update payment status
         $payment->update([
-            'status' => $request->status,
+            'status' => $request->status == 'success' ? 'paid' : 'failed',
             'paid_at' => $request->status === 'success' ? now() : null
         ]);
 
