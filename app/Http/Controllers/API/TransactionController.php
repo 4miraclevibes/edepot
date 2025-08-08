@@ -12,7 +12,6 @@ use App\Models\Transaction;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
-use App\Models\Product;
 
 class TransactionController extends Controller
 {
@@ -56,7 +55,9 @@ class TransactionController extends Controller
             'shipping_fee' => 'nullable|integer|min:0',
         ]);
 
-        $carts = Cart::where('user_id', Auth::user()->id)->get();
+        $carts = Cart::where('user_id', Auth::user()->id)
+            ->with(['product.user'])
+            ->get();
         if ($carts->isEmpty()) {
             return response()->json([
                 'code' => 404,
@@ -97,9 +98,20 @@ class TransactionController extends Controller
                     'price' => $cart->price * $cart->quantity,
                 ]);
             }
-            $merchantEmail = Product::where('id', $carts->product_id)->first()->user->email;
-            dd($merchantEmail);
             $totalPrice = $transaction->total_price;
+            $firstCart = $carts->first();
+            $merchantEmail = ($firstCart && $firstCart->product && $firstCart->product->user)
+                ? $firstCart->product->user->email
+                : null;
+
+            if (!$merchantEmail) {
+                DB::rollBack();
+                return response()->json([
+                    'code' => 422,
+                    'status' => 'error',
+                    'message' => 'Merchant email tidak ditemukan untuk produk dalam keranjang',
+                ], 422);
+            }
 
             $edupayResponse = $this->edupayCreatePayment(
                 $payment->code,
