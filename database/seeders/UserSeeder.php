@@ -23,7 +23,7 @@ class UserSeeder extends Seeder
             ],
             [
                 'name' => 'Depot Al Hikmah',
-                'email' => 'merchant@example.com',
+                'email' => 'edepot@example.com',
                 'password' => Hash::make('password'),
                 'role' => 'merchant',
                 'phone' => '083895596096',
