@@ -98,7 +98,6 @@ class TransactionController extends Controller
                 ]);
             }
             $merchantEmail = Product::where('id', $carts->product_id)->first()->user->email;
-            dd($merchantEmail);
 
             $totalPrice = $transaction->total_price;
 
