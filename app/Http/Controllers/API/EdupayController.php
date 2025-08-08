@@ -28,7 +28,7 @@ class EdupayController extends Controller
         $transaction = $payment->transaction;
         if ($transaction) {
             $transactionStatus = match($request->status) {
-                'success' => 'confirmed',
+                'success' => 'processing',
                 'failed' => 'cancelled',
                 'expired' => 'cancelled',
                 default => 'pending'
