@@ -104,6 +104,8 @@ class TransactionController extends Controller
                 ? $firstCart->product->user->email
                 : null;
 
+                dd($merchantEmail);
+
             if (!$merchantEmail) {
                 DB::rollBack();
                 return response()->json([
